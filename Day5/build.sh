@@ -1,0 +1,1 @@
+gfortran main.f -o program.exe
