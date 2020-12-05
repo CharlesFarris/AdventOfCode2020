@@ -32,9 +32,7 @@ c        read input file
          line = lines(i)
          if (line.eq.'') then
             write(*,*) 'break'
-            write(*,*) 'Tokens:',count,(tokens(k),k=1,count)
             valid = valid+validate(tokens,count)
-            write(*,*) 'Valid: ',valid
             count = 0
          else
             state = 0
@@ -66,14 +64,14 @@ c        read input file
          endif
  300  continue
 
-      write(*,*) 'Valid: ',valid
+      write(*,*) 'Total: ',valid
       end
 
       function validate(tokens,count)
          integer validate,count
-         character tokens(32)*32,key*3,value*32
+         character tokens(32)*32,key*3,value*32,units*2
          integer byr,iyr,eyr,hgt,hcl,ecl,pid,cid
-         integer i,strlen
+         integer i,j,strlen,ishex,sum,length
          real temp
 
          byr = 0
@@ -87,7 +85,6 @@ c        read input file
          validate = 0
          do 500 i=1,count
             key = tokens(i)(1:3)
-            write(*,*) i,key
             if(key.eq.'byr') then
                value = tokens(i)(5:)
                if(strlen(value).eq.4) then
@@ -96,6 +93,7 @@ c        read input file
                      byr = 1
                   endif
                endif
+               write(*,*) i,tokens(i),byr,temp
             else if(key.eq.'iyr') then
                value = tokens(i)(5:)
                if(strlen(value).eq.4) then
@@ -104,6 +102,7 @@ c        read input file
                      iyr = 1
                   endif
                endif
+               write(*,*) i,tokens(i),iyr,temp
             else if(key.eq.'eyr') then
                value = tokens(i)(5:)
                if(strlen(value).eq.4) then
@@ -112,9 +111,23 @@ c        read input file
                      eyr = 1
                   endif
                endif
+               write(*,*) i,tokens(i),eyr,temp
             else if(key.eq.'hgt') then
                value = tokens(i)(5:)
-               hgt = 1
+               length = strlen(value)
+               units = value(length-1:length)
+               if (units.eq.'cm') then
+                  read(value(:length-2),*) temp
+                  if(temp.ge.150.and.temp.le.193) then
+                     hgt = 1
+                  endif
+               else if(units.eq.'in') then
+                  read(value(:length-2),*) temp
+                  if(temp.ge.59.and.temp.le.76) then
+                     hgt = 1
+                  endif
+               endif
+               write(*,*) i,tokens(i),hgt,temp,units
             else if(key.eq.'ecl') then
                value = tokens(i)(5:)
                if(value.eq.'amb'.or.value.eq.'blu'.or.value.eq.'brn'.or.
@@ -122,21 +135,35 @@ c        read input file
      $            value.eq.'oth') then
                   ecl = 1
                endif
+               write(*,*) i,tokens(i),ecl,value
             else if(key.eq.'hcl') then
                value = tokens(i)(5:)
-               if(len(value).eq.7) then
+               if(strlen(value).eq.7) then
                   if(value(1:1).eq.'#') then
-                     hcl = 1
+                     sum = 0
+                     do 485 j=2,7
+                        sum = sum + ishex(value(j:j))
+ 485                 continue
+                     if(sum.eq.6) then
+                        hcl = 1
+                     endif
                   endif
                endif
+               write(*,*) i,tokens(i),hcl,value
             else if(key.eq.'pid') then
                value = tokens(i)(5:)
-               if(len(value).eq.9) then
+               if(strlen(value).eq.9) then
+                  sum = 0
                   do 475 j=1,9
-                     
+                     if(value(j:j).ge.'0'.and.value(j:j).le.'9') then
+                        sum = sum + 1
+                     endif
  475              continue
-                  pid = 1
+                  if(sum.eq.9) then
+                     pid = 1
+                  endif
                endif
+               write(*,*) i,tokens(i),pid,value,sum
             else if(key.eq.'cid') then
                cid = 1
             endif
@@ -145,6 +172,7 @@ c        read input file
          if(sum.eq.8) then
             validate = 1
          endif
+         write(*,*) 'Valid: ', validate
          return
       end
 
@@ -160,3 +188,13 @@ c        read input file
  600     continue            
  650     return
       end      
+
+      integer function ishex(c)
+         character c*1
+         if(c.ge.'a'.and.c.le.'f') then
+            ishex = 1
+         else if(c.ge.'0'.and.c.le.'9') then
+            ishex = 1
+         endif
+         return
+      end
