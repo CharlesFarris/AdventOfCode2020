@@ -5,7 +5,7 @@
          character token*32,tokens(32)*32
          integer rows,count,state,length
          integer i,j,k,io
-         integer valid,validate
+         integer valid,validate,strlen
 
 c        read input file         
          open(1,FILE='input.txt',STATUS='OLD')
@@ -71,9 +71,10 @@ c        read input file
 
       function validate(tokens,count)
          integer validate,count
-         character tokens(32)*32,key*3
+         character tokens(32)*32,key*3,value*32
          integer byr,iyr,eyr,hgt,hcl,ecl,pid,cid
-         integer i
+         integer i,strlen
+         real temp
 
          byr = 0
          iyr = 0
@@ -82,38 +83,80 @@ c        read input file
          hcl = 0
          ecl = 0
          pid = 0
-         cid = 0
+         cid = 1
          validate = 0
          do 500 i=1,count
             key = tokens(i)(1:3)
+            write(*,*) i,key
             if(key.eq.'byr') then
-               byr = 1
+               value = tokens(i)(5:)
+               if(strlen(value).eq.4) then
+                  read(value,*) temp
+                  if(temp.ge.1920.and.temp.le.2002) then
+                     byr = 1
+                  endif
+               endif
             else if(key.eq.'iyr') then
-               iyr = 1
+               value = tokens(i)(5:)
+               if(strlen(value).eq.4) then
+                  read(value,*) temp
+                  if(temp.ge.2010.and.temp.le.2020) then
+                     iyr = 1
+                  endif
+               endif
             else if(key.eq.'eyr') then
-               eyr = 1
+               value = tokens(i)(5:)
+               if(strlen(value).eq.4) then
+                  read(value,*) temp
+                  if(temp.ge.2020.and.temp.le.2030) then
+                     eyr = 1
+                  endif
+               endif
             else if(key.eq.'hgt') then
-               hcl = 1
-            else if(key.eq.'hcl') then
+               value = tokens(i)(5:)
                hgt = 1
             else if(key.eq.'ecl') then
-               ecl = 1
+               value = tokens(i)(5:)
+               if(value.eq.'amb'.or.value.eq.'blu'.or.value.eq.'brn'.or.
+     $            value.eq.'gry'.or.value.eq.'grn'.or.value.eq.'hzl'.or.
+     $            value.eq.'oth') then
+                  ecl = 1
+               endif
+            else if(key.eq.'hcl') then
+               value = tokens(i)(5:)
+               if(len(value).eq.7) then
+                  if(value(1:1).eq.'#') then
+                     hcl = 1
+                  endif
+               endif
             else if(key.eq.'pid') then
-               pid = 1
+               value = tokens(i)(5:)
+               if(len(value).eq.9) then
+                  do 475 j=1,9
+                     
+ 475              continue
+                  pid = 1
+               endif
             else if(key.eq.'cid') then
                cid = 1
             endif
  500     continue
-         sum = byr+iyr+eyr+hcl+hgt+ecl+pid
-         if (cid.eq.0) then
-            sum = sum+1
-         else if(cid.eq.1) then
-            sum = sum+cid
-         endif
+         sum = byr+iyr+eyr+hcl+hgt+ecl+pid+cid
          if(sum.eq.8) then
             validate = 1
-         else
-            validate = 0
          endif
          return
       end
+
+      integer function strlen(st)
+         integer i,length
+         character st*(*)
+         length = len(st)
+         do 600 i=1,length
+            if (st(i:i).eq.' ') then
+               strlen = i-1
+               goto 650
+            endif
+ 600     continue            
+ 650     return
+      end      
