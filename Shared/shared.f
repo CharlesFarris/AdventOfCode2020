@@ -1,4 +1,5 @@
 c       returns the actual length of the string
+c       returns: actual length
         integer function strlen(value)
             implicit none
             integer i,length
@@ -15,6 +16,7 @@ c       returns the actual length of the string
 
 c       replaces all instances of the character c
 c       with the character r
+c       returns:  number of replaced characters
         integer function replace(value,c,r)
             implicit none
             integer i,length,count
@@ -24,7 +26,7 @@ c       with the character r
             count = 0
             do 700 i=1,length
                 if(value(i:i).eq.c) then
-                    count = count + 1
+                    count = count+1
                     value(i:i) = r
                 endif
  700        continue
@@ -32,5 +34,28 @@ c       with the character r
             return
         end
 
+c       reads all lines from a file
+        integer function readlines(path,lines)
+            implicit none
+            character path*(*),lines(*)*256,line*256
+            integer count,io
 
+            count = 0
+            open(1,FILE=path,STATUS='OLD')
+            do
+                read(1,"(A256)",IOSTAT=io) line
+                if (io.gt.0) then
+                    write(*,*) 'Error'
+                    exit
+                else if(io.lt.0) then
+                    exit
+                else
+                    count = count+1
+                    lines(count)=line
+                endif
+            enddo
+ 800        close(1)
+            readlines = count
+            return
+        end
             
