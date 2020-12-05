@@ -1,32 +1,49 @@
-c       test program
+c       tests for the functions in Shared\shared.f
         program Test
-            integer strlen,length
-            character line*32
+            implicit none
 
-            test_strlen = 1
+c           functions            
+            integer strlen,replace
+            
+c           locals
+            integer length,count
+            character source*32
 
-            line = ''
-            length = strlen(line)
+c           test strlen()            
+            source = ''
+            length = strlen(source)
             if(length.ne.0) then
-                write(*,*) 'Length = 0 failed',length
+                write(*,*) 'strlen: Length = 0 failed',length
             endif
 
-            line = ' '
-            length = strlen(line)
+            source = ' '
+            length = strlen(source)
             if (length.ne.0) then
-                write(*,*) 'Length = 0 failed',length
+                write(*,*) 'strlen: Length = 0 failed',length
             endif
 
-            line = 'abc'
-            length = strlen(line)
+            source = 'abc'
+            length = strlen(source)
             if (length.ne.3) then
-                write(*,*) 'Length = 3 failed',length
+                write(*,*) 'strlen: Length = 3 failed',length
             endif
 
-            line = 'abc def'
-            length = strlen(line)
+            source = 'abc def'
+            length = strlen(source)
             if (length.ne.7) then
-                write(*,*) 'Length = 7 failed',length
+                write(*,*) 'strlen: Length = 7 failed',source,length
             endif
 
+c           test replace()            
+            source = 'abcdef'
+            count = replace(source,'a','z')
+            if(count.ne.1.or.source.ne.'zbcdef') then
+                write(*,*) 'replace: failed',count,source
+            endif
+
+            source ='aaa aaa'
+            count = replace(source,'a','z')
+            if(count.ne.6.or.source.ne.'zzz zzz') then
+                write(*,*) 'replace: failed',count,source
+            endif
         end
