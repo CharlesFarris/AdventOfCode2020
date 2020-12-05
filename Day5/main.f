@@ -1,8 +1,8 @@
         program Day5
             character line*12
-            integer max,id,decode
+            integer ids(1024),count,i,decode,filled(1032),seat
 
-            max = 0
+            count = 0
 
 c           read input file         
             open(1,FILE='input.txt',STATUS='OLD')
@@ -15,16 +15,34 @@ c           read input file
                   exit
                else
                     write(*,*) line
-                    id = decode(line)
-                    if(id.gt.max) then
-                        max = id
-                    endif
+                    count = count+1
+                    ids(count) = decode(line)
                endif
             enddo
  200        close(1)
 
+c           create filled list
+            do 275 i=1,1032
+                filled(i) = 0
+ 275        continue
 
-            write(*,*) 'Max: ',max
+c           update filled list
+            do 300 i=1,count
+                write(*,*) ids(i)
+                filled(ids(i)) = 1
+ 300        continue
+
+c           find empty seat 
+            seat =-1
+            do 325 i=2,1031
+                if(filled(i).eq.0) then
+                    if (filled(i-1).eq.1.and.filled(i+1).eq.1) then
+                        seat = i
+                        write(*,*) 'Seat: ',seat
+                    endif
+                endif
+ 325        continue
+
         end
 
         function decode(line)
