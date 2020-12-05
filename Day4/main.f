@@ -1,70 +1,62 @@
       program Day4
          implicit none
+         
+c        shared functions
+         integer readlines,strlen
+         
+c        locals         
          character line*256,lines(2048)*256
          character ch*1
          character token*32,tokens(32)*32
          integer rows,count,state,length
-         integer i,j,k,io
-         integer valid,validate,strlen
+         integer i,j,k
+         integer valid,validate
 
-c        read input file         
-         open(1,FILE='input.txt',STATUS='OLD')
-         do
-            read(1,"(A256)",IOSTAT=io) line
-            if (io.gt.0) then
-               write(*,*) 'Error'
-               exit
-            else if(io.lt.0) then
-               exit
+c        read input file
+         rows = readlines('input.txt',lines)
+
+         write(*,*) 'Rows: ',rows
+         rows = rows+1
+         lines(rows) = ''
+         count = 0
+         valid = 0
+         do 300 i=1,rows
+            line = lines(i)
+            if (line.eq.'') then
+               write(*,*) 'break'
+               valid = valid+validate(tokens,count)
+               count = 0
             else
-               rows = rows+1
-               lines(rows)=line
+               state = 0
+               do 350 j=1,256
+                  ch = line(j:j)
+                  if(state.eq.0) then
+                     if(ch.eq.'') then
+                     else if(ch.eq.' ') then
+                     else
+                        state = 1
+                        length = 1
+                        token(length:length) = ch
+                     endif
+                  else if(state.eq.1) then
+                     if(ch.eq.'') then
+                        state = 0
+                        count = count+1
+                        tokens(count) = token(1:length)
+                     else if(ch.eq.' ') then
+                        state = 0
+                        count = count+1
+                        tokens(count) = token(1:length)
+                     else
+                        length = length+1
+                        token(length:length) = ch
+                     endif
+                  endif
+ 350         continue
             endif
-         enddo
- 200  close(1)
+ 300     continue
 
-      write(*,*) 'Rows: ',rows
-      rows = rows+1
-      lines(rows) = ''
-      count = 0
-      valid = 0
-      do 300 i=1,rows
-         line = lines(i)
-         if (line.eq.'') then
-            write(*,*) 'break'
-            valid = valid+validate(tokens,count)
-            count = 0
-         else
-            state = 0
-            do 350 j=1,256
-               ch = line(j:j)
-               if(state.eq.0) then
-                  if(ch.eq.'') then
-                  else if(ch.eq.' ') then
-                  else
-                     state = 1
-                     length = 1
-                     token(length:length) = ch
-                  endif
-               else if(state.eq.1) then
-                  if(ch.eq.'') then
-                     state = 0
-                     count = count+1
-                     tokens(count) = token(1:length)
-                  else if(ch.eq.' ') then
-                     state = 0
-                     count = count+1
-                     tokens(count) = token(1:length)
-                  else
-                     length = length+1
-                     token(length:length) = ch
-                  endif
-               endif
- 350        continue
-         endif
- 300  continue
-
-      write(*,*) 'Total: ',valid
+         write(*,*) 'Total: ',valid
       end
 
       function validate(tokens,count)
@@ -142,7 +134,7 @@ c        read input file
                   if(value(1:1).eq.'#') then
                      sum = 0
                      do 485 j=2,7
-                        sum = sum + ishex(value(j:j))
+                        sum = sum+ishex(value(j:j))
  485                 continue
                      if(sum.eq.6) then
                         hcl = 1
@@ -156,7 +148,7 @@ c        read input file
                   sum = 0
                   do 475 j=1,9
                      if(value(j:j).ge.'0'.and.value(j:j).le.'9') then
-                        sum = sum + 1
+                        sum = sum+1
                      endif
  475              continue
                   if(sum.eq.9) then
@@ -172,22 +164,9 @@ c        read input file
          if(sum.eq.8) then
             validate = 1
          endif
-         write(*,*) 'Valid: ', validate
+         write(*,*) 'Valid: ',validate
          return
       end
-
-      integer function strlen(st)
-         integer i,length
-         character st*(*)
-         length = len(st)
-         do 600 i=1,length
-            if (st(i:i).eq.' ') then
-               strlen = i-1
-               goto 650
-            endif
- 600     continue            
- 650     return
-      end      
 
       integer function ishex(c)
          character c*1
