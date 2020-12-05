@@ -4,7 +4,7 @@
 
          valid = 0
 
-c        read input fil         
+c        read input file
          open(1,FILE='input.txt',STATUS='OLD')
          do
             read(1,*,IOSTAT=io) tokens
@@ -14,12 +14,12 @@ c        read input fil
             else if(io.lt.0) then
                exit
             else
-               valid = valid + validate(tokens)
+               valid = valid+validate(tokens)
             endif
          enddo
          close(1)
 
-         write(*,*) 'Valid: ', valid
+         write(*,*) 'Valid: ',valid
       end      
 
       integer function validate(tokens)
@@ -33,14 +33,15 @@ c        read input fil
                tokens(1)(i:i) = ' '
             endif
  100     continue
-         read(tokens(1), *) min,max            
+         read(tokens(1),*) min,max
          c=tokens(2)(1:1)
-         do 150 i=1,32
-            if(tokens(3)(i:i).eq.c) then
-               count = count+1
-            endif
- 150     continue
-         if(count.ge.min.and.count.le.max) then
+         if(tokens(3)(min:min).eq.c) then
+            count = count+1
+         endif
+         if(tokens(3)(max:max).eq.c) then
+            count =count+1
+         endif
+         if(count.eq.1) then
             validate = 1
          endif
          write(*,*) c,min,max,validate,tokens(3)
