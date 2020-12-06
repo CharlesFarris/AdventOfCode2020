@@ -1,9 +1,10 @@
         program Day6
             character line*32,c*1
             integer questions(1024,26),groups,length,i,j,index,total
-            integer sums(1024)
+            integer sums(1024),people(1024)
 
             groups = 1
+            people(1) = 0
 
 c           read input file         
             open(1,FILE='input.txt',STATUS='OLD')
@@ -15,15 +16,18 @@ c           read input file
                else if(io.lt.0) then
                   exit
                else
-                    write(*,*) line
                     if(line.eq.'') then
                         groups = groups+1
+                        people(groups) = 0
+                        write(*,*) line
                     else
+                        people(groups) = people(groups)+1
                         do 100 i=1,32
                             c = line(i:i)
                             if(c.ne.' ') then
                                 index = ichar(c)-96
-                                questions(groups,index) = 1
+                                questions(groups,
+     $                             index) = questions(groups,index)+1
                                 write(*,*) c,index,questions(groups,
      $                             index)
                             endif
@@ -38,10 +42,12 @@ c           sum groups
             do 300 i=1,groups
                 sums(i) = 0
                 do 350 j=1,26
-                    sums(i) = sums(i)+questions(i,j)
+                    if(questions(i,j).eq.people(i)) then
+                        sums(i) = sums(i)+1
+                    endif
  350            continue
-                write(*,*) 'Group: ',i,sums(i)
-                total = total + sums(i)
+                write(*,*) 'Group: ',i,sums(i),people(i)
+                total = total+sums(i)
  300        continue
             write(*,*) 'Total: ',total
         end
