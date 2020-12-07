@@ -11,7 +11,7 @@ c           locals
             integer rows,count,findbag,childbag
             integer i,j,k,l,findparentbags
             integer stack(1024),height
-            integer parentbags(4096),parentbagscount
+            integer multiplier,bagcount
             
 c           read input file
             rows = readlines('input.txt',lines)
@@ -66,30 +66,27 @@ c           read input file
                 write(*,*) rules(i,1),rules(i,2),rules(i,3)
  190        continue
 
-            parentbagscount = 0
             height = 1
             bag = 'shiny gold bag'
+            bagcount = -1
             stack(height) = findbag(bag,bags,rows)
             do 195 i = 1,32768
                 if(height.eq.0) then
                     goto 196
                 endif
                 childbag = stack(height)
+                bagcount = bagcount + 1
                 height = height-1
                 do 197 j=1,rulecount
-                    if(rules(j,2).eq.childbag) then
-                        height = height+1
-                        stack(height) = rules(j,1)
-                        if(findparentbags(rules(j,1),parentbags,
-     $                     parentbagscount).eq.0) then
-                            parentbagscount = parentbagscount+1
-                            parentbags(parentbagscount) = rules(j,
-     $                         1)
-                        endif
+                    if(rules(j,1).eq.childbag) then
+                        do 198 k=1,rules(j,3)
+                            height = height+1
+                            stack(height) = rules(j,2)
+ 198                    continue
                     endif
  197            continue           
  195        continue
- 196        write(*,*) 'bags: ',parentbagscount
+ 196        write(*,*) 'bags: ',bagcount
         end
 
         integer function findparentbags(id,parentbags,parentbagscount)
