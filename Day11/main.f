@@ -28,13 +28,16 @@ c           create grid
                     endif
                 enddo
             enddo
+            call printgrid(grid,rows,columns)
 
-c           iterate over rules
+c           skip to part 2
+            goto 199 
+
+c           iterate over rules (part 1)
             state = 0
             iteration = 1
 100         if(state.eq.0) then
                 write(*,*) 'Iteration: ',iteration
-                call printgrid(grid,rows,columns)
                 call update(grid,copy,rows,columns)
                 call printgrid(copy,rows,columns)
                 state = areequal(grid,copy,rows,columns)
@@ -45,6 +48,24 @@ c           iterate over rules
 
             count = occupied(grid,rows,columns)
             write(*,*) 'Part 1'
+            write(*,*) 'Occupied: ',count
+
+c           iterate over rules (part 2)
+199         continue
+            state = 0
+            iteration = 1
+200         if(state.eq.0) then
+                write(*,*) 'Iteration: ',iteration
+                call update2(grid,copy,rows,columns)
+                call printgrid(copy,rows,columns)
+                state = areequal(grid,copy,rows,columns)
+                call swap(grid,copy)
+                iteration = iteration+1
+                goto 200
+            endif
+
+            count = occupied(grid,rows,columns)
+            write(*,*) 'Part 2'
             write(*,*) 'Occupied: ',count
         end
 
@@ -153,7 +174,7 @@ c       counts the occupied seats
         end            
 
 
-c       applies the seat rules        
+c       applies the seat rules (part 1)
         subroutine update(source,target,rows,columns)
             implicit none
 
@@ -177,3 +198,68 @@ c       applies the seat rules
                 enddo
             enddo
         end
+
+c       applies the seat rules (part 2)
+        subroutine update2(source,target,rows,columns)
+            implicit none
+
+            integer source(128,128),target(128,128),rows,columns
+            integer i,j,adjacent,count,search
+
+            do i=1,rows
+                do j=1,columns
+                    target(i,j) = source(i,j)
+
+                    count = search(source,rows,columns,i,j,-1,-1)
+                    count = count+search(source,rows,columns,i,j,0,-1)
+                    count = count+search(source,rows,columns,i,j,1,-1)
+                    count = count+search(source,rows,columns,i,j,-1,0)
+                    count = count+search(source,rows,columns,i,j,1,0)
+                    count = count+search(source,rows,columns,i,j,-1,1)
+                    count = count+search(source,rows,columns,i,j,0,1)
+                    count = count+search(source,rows,columns,i,j,1,1)
+         
+                    if(source(i,j).eq.1) then
+                        if(count.eq.0) then
+                            target(i,j) = 2
+                        endif
+                    else if (source(i,j).eq.2) then
+                        if(count.ge.5) then
+                            target(i,j) = 1
+                        endif
+                    endif
+                enddo
+            enddo
+        end
+
+c       searches for adjacent seats
+        integer function search(grid,rows,columns,row,column,dr,dc)
+            implicit none
+
+            integer grid(128,128),rows,columns
+            integer i,j,dr,dc,row,column
+
+            search = 0
+            i = row+dr
+            j = column+dc
+ 100        if (1.eq.1) then
+                if(i.lt.1.or.i.gt.rows) then
+                    goto 200
+                endif
+                if(j.lt.1.or.j.gt.columns) then
+                    goto 200
+                endif
+                if(grid(i,j).eq.1) then
+                    goto 200
+                else if(grid(i,j).eq.2) then
+                    search = 1
+                    goto 200
+                endif
+                i = i+dr
+                j = j+dc
+                goto 100
+            endif            
+ 200        continue            
+            return
+        end
+
