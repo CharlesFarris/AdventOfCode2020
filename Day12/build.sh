@@ -1,0 +1,1 @@
+gfortran main.f ../Shared/shared.f -o program.exe
